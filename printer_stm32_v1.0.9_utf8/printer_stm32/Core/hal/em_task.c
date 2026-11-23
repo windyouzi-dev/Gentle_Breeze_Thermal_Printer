@@ -62,7 +62,7 @@ void run_report()
 	if (get_state_timeout())//周期上报 （检查是否到点）
     {
 			clean_state_timeout();//复位超时标志
-        read_all_hal();
+        read_all_sensors();
         if (get_ble_connect())
         {
 						printf("report device status:report time up\n");

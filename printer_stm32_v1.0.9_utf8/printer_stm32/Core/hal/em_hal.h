@@ -24,7 +24,7 @@ void run_beep(beep_type_e type);
 
 void run_led(led_type_e type);
 
-void read_all_hal(void);
+void read_all_sensors(void);
 
 void init_hal(void);
 
