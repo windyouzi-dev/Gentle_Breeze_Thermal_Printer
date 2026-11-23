@@ -49,20 +49,20 @@ void read_temperature()
 }
 
 void run_beep(beep_type_e type){
-
+	
 }
 
 void run_led(led_type_e type){
     switch (type)
     {
     case LED_CONNECT:
-        digitalWrite(PIN_LED, 0);
+        digitalWrite(PIN_LED, 0);	//亮灯
         break;
 		case LED_DISCONNECT:
-				digitalWrite(PIN_LED, 1);
+				digitalWrite(PIN_LED, 1);	//灭灯
         break;
     case LED_WARN:
-        digitalWrite(PIN_LED, 0);
+        digitalWrite(PIN_LED, 0);	//闪烁 2 次进行预警
         vTaskDelay(200);
         digitalWrite(PIN_LED, 1);
         vTaskDelay(200);
@@ -73,13 +73,13 @@ void run_led(led_type_e type){
         digitalWrite(PIN_LED, 0);
         break;
     case LED_PRINTER_START:
-				digitalWrite(PIN_LED, 1);
+				digitalWrite(PIN_LED, 1);//打印开始 闪烁一次后常亮
 				vTaskDelay(200);
         digitalWrite(PIN_LED, 0);
         vTaskDelay(200);
         break;
 		case LED_BLE_INIT:
-				digitalWrite(PIN_LED, 0);
+				digitalWrite(PIN_LED, 0);//蓝牙灯光初始化 亮一下后灭掉
         vTaskDelay(10);
         digitalWrite(PIN_LED, 1);
     default:
@@ -127,12 +127,6 @@ void read_all_hal()
 
 void init_hal()
 {
-    //缺纸IO初始化
-    // pinMode(PIN_PAPER, INPUT);
-    // attachInterrupt(PIN_PAPER, paper_isr, RISING);
-	
 	digitalWrite(PIN_LED, 1);
-	
-
 }
 

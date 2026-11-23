@@ -99,8 +99,8 @@ int main(void)
   MX_USART2_UART_Init();
   MX_TIM1_Init();
   /* USER CODE BEGIN 2 */
-	printf("----app init v1.0.9----\n");
-	HAL_UART_Receive_IT(&huart2, (uint8_t *)&aRxBuffer, 1);
+	printf("----app init V1.1----\n");
+	HAL_UART_Receive_IT(&huart2, (uint8_t *)&aRxBuffer, 1);//串口接收中断打开：句柄指针，数据地址，字节数
 	init_task();
   /* USER CODE END 2 */
 
@@ -170,25 +170,22 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
-//printf
-#ifdef __GNUC__
-  /* With GCC/RAISONANCE, small printf (option LD Linker->Libraries->Small printf
-     set to 'Yes') calls __io_putchar() */
+//printf重定义
+#ifdef __GNUC__ //它由GCC编译器自动生成，主板本号
   #define PUTCHAR_PROTOTYPE int __io_putchar(int ch)
 #else
   #define PUTCHAR_PROTOTYPE int fputc(int ch, FILE *f)
 #endif /* __GNUC__ */
 /**
-  * @brief  Retargets the C library printf function to the USART.
+  * @brief 	重定义printf到串口1（usb口打印日志）
+					（宏（输出字符原型）为了整合CubeMX IDE的GCC编译器和Keil5 MDK编译器 
+						对 字符输出原型 定义不同 的影响）
   * @param  None
   * @retval None
   */
 PUTCHAR_PROTOTYPE
 {
-  /* Place your implementation of fputc here */
-  /* e.g. write a character to the EVAL_COM1 and Loop until the end of transmission */
-  HAL_UART_Transmit(&huart1, (uint8_t *)&ch, 1, 0xFFFF);
- 
+  HAL_UART_Transmit(&huart1, (uint8_t *)&ch, 1, 0xFFFF);	//串口发送： 串口句柄指针，被发送数据的首地址（强转成四个字节），字节数，超时时间
   return ch;
 }
 /* USER CODE END 4 */

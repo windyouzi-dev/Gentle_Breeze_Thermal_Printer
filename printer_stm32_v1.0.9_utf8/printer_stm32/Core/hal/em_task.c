@@ -40,7 +40,7 @@ void key_long_click_handle()
 			need_beep = true;		//缺纸
     if (need_beep)
     {
-        run_beep(BEEP_WARN);
+        run_beep(BEEP_WARN);	//空的
 				run_led(LED_WARN);
     }
 }
@@ -59,9 +59,9 @@ void key_long_click_free_handle()
  */
 void run_report()
 {
-    if (get_state_timeout())
+	if (get_state_timeout())//周期上报 （检查是否到点）
     {
-				clean_state_timeout();
+			clean_state_timeout();//复位超时标志
         read_all_hal();
         if (get_ble_connect())
         {
@@ -69,10 +69,9 @@ void run_report()
             ble_report();
         }
     }
-    if (read_paper_irq_need_report_status())
+    if (read_paper_irq_need_report_status())//缺纸上报 （中断）
     {
-        // 缺纸中断产生，需要上报
-        printf("report device status : paper irq\n");
+     		printf("设备状态上报 : 纸张 短缺\n");
         ble_report();
     }
 }
@@ -126,7 +125,7 @@ void task_report(void *pvParameters)
 {
 		int count = 0;
 		printf("task_report init\n");
-    for (;;) // A Task shall never return or exit.
+	for (;;) // 任务不会退出
     {
         run_report();
         vTaskDelay(100);
@@ -202,7 +201,7 @@ void init_task()
     xTaskCreate(
         task_report,  // 任务函数
         "TaskReport", // 任务名
-        128,         // 任务栈
+        128,         // 任务栈  (字word 4字节)
         NULL,         // 任务参数
         1,            // 任务优先级, with 3 (configMAX_PRIORITIES - 1) 是最高的，0是最低的.
         NULL          // 任务句柄

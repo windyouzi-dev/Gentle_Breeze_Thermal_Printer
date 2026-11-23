@@ -19,9 +19,9 @@ void read_state_timer_callbackfun(void const * argument)
 }
 
 void init_timer(){
-	osTimerDef(myStateTimer, read_state_timer_callbackfun);
-  myStateTimerHandle = osTimerCreate(osTimer(myStateTimer), osTimerPeriodic, NULL);
-	osTimerStart(myStateTimerHandle,10000);
+	osTimerDef(myStateTimer, read_state_timer_callbackfun); //静态定义一个定时器对象，把回调函数绑定为 read_state_timer_callbackfun
+  myStateTimerHandle = osTimerCreate(osTimer(myStateTimer), osTimerPeriodic, NULL);//创建定时器，并设置成 周期触发
+	osTimerStart(myStateTimerHandle,10000);									//启动，周期为 10000 tick，即 10 秒
 }
 
 bool get_state_timeout(){

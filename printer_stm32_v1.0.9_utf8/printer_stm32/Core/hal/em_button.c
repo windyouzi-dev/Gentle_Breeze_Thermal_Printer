@@ -21,7 +21,7 @@ void key_check_run(){
     }
   }
   if(keyIsPress == true){		//按下了。
-    if( HAL_GPIO_ReadPin(BTN_GPIO_Port,BTN_Pin) == HIGH)
+    if( HAL_GPIO_ReadPin(BTN_GPIO_Port,BTN_Pin) == HIGH)//现在按键没有被按下
 		{
       if(HAL_GetTick() - clicktime > SHORT_PRESS_TIME)//松开按键后发现上一个是长按
 			{
@@ -35,14 +35,14 @@ void key_check_run(){
       }
       keyIsPress = false;
     }
-		else
+		else//现在按键被按下
 		{
       if(HAL_GetTick() - clicktime > SHORT_PRESS_TIME)
 			{
-        if(longPressIsStart == false)
+        if(longPressIsStart == false)//还不是长按
 				{
-          key_long_click_handle();
-          longPressIsStart = true;
+          key_long_click_handle();//长按按键开始——事件
+          longPressIsStart = true;//更新长按标志
         }
       }
     }
