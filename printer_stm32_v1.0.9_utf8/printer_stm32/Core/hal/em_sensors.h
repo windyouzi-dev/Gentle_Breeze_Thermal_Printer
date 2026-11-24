@@ -26,7 +26,7 @@ void run_led(led_type_e type);
 
 void read_all_sensors(void);
 
-void init_hal(void);
+void init_sensors(void);
 
 bool read_paper_irq_need_report_status(void);
 

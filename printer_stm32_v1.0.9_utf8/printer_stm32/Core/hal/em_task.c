@@ -193,7 +193,7 @@ void init_task()
     printf("init_task\n");
     init_device_state();
     init_timer();
-    init_hal();
+    init_sensors();
     init_queue();
     adc_init();
 //    init_key();

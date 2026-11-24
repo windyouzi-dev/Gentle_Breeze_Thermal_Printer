@@ -124,7 +124,7 @@ void read_all_sensors()
     read_paper_statue();
 }
 
-void init_hal()
+void init_sensors()
 {
 	HAL_GPIO_WritePin(LED_GPIO_Port,LED_Pin,GPIO_PIN_SET);//把灯关了，因为初始化是拉低的
 }
