@@ -4,7 +4,7 @@
 
 #include "em_config.h"
 #include "em_device.h"
-#include "em_hal.h"
+#include "em_sensors.h"
 #include "em_queue.h"
 
 /**

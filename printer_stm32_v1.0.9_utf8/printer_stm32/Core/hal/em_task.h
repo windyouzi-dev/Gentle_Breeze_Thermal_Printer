@@ -5,7 +5,7 @@
 #include "em_device.h"
 #include "em_timer.h"
 #include "em_ble.h"
-#include "em_hal.h"
+#include "em_sensors.h"
 #include "em_queue.h"
 
 void init_task(void);

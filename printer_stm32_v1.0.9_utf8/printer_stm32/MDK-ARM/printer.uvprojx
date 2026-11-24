@@ -642,11 +642,6 @@
               <FilePath>..\Core\hal\em_timer.c</FilePath>
             </File>
             <File>
-              <FileName>em_hal.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\Core\hal\em_hal.c</FilePath>
-            </File>
-            <File>
               <FileName>em_printer.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\Core\hal\em_printer.c</FilePath>
@@ -660,6 +655,11 @@
               <FileName>em_task.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\Core\hal\em_task.c</FilePath>
+            </File>
+            <File>
+              <FileName>em_sensors.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Core\hal\em_sensors.c</FilePath>
             </File>
           </Files>
         </Group>
