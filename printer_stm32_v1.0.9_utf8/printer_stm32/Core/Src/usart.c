@@ -195,7 +195,7 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef* uartHandle)
 
 /* USER CODE BEGIN 1 */
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart){	//覆盖原来的_weak 空函数
-	if(huart->Instance == USART2){								//串口寄存器的地址		
+	if(huart->Instance == USART2){								//蓝牙串口寄存器的地址		
 			uart_cmd_handle(aRxBuffer);								//进行协议解析
 			HAL_UART_Receive_IT(&huart2, (uint8_t *)&aRxBuffer, 1);		//重挂单字节中断，维持连续接收
 	}

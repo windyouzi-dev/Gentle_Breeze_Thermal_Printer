@@ -3,71 +3,92 @@
 
 ble_rx_t g_ble_rx;
 
-SemaphoreHandle_t xHandler = NULL;
+SemaphoreHandle_t xHandler = NULL;//FreeRTOS 中的信号量句柄类型
 
 void init_queue()
 {
 		clean_printbuffer();
-    xHandler = xSemaphoreCreateMutex();
+    xHandler = xSemaphoreCreateMutex();// 创建成功则返回有效句柄
 }
 
 /**
- * @brief 写入一行数据
+* @brief 通过蓝牙向打印缓冲区写入一行数据
  *
- * @param pdata
- * @param length
+ * @param pdata 	数据地址
+ * @param length	字节数
  */
 void write_to_printbuffer(uint8_t *pdata, size_t length)
 {
-		static BaseType_t xHigherPriorityTaskWoken;
+		static BaseType_t xHigherPriorityTaskWoken;//FRTOS中长整形的变量，看有没有更高优先级任务被触发
     if (length == 0)
         return;
     if (g_ble_rx.left_line >= MAX_LINE)
         return;
-    if (length > MAX_ONELINE_BYTE)
+    if (length > MAX_ONELINE_BYTE)//行截断
         length = MAX_ONELINE_BYTE;
-    // 查看是否可以获得信号量，如果信号量不可用，则用10个时钟滴答来查看信号量是否可用
-    if (xSemaphoreTakeFromISR(xHandler, &xHigherPriorityTaskWoken) == pdPASS)
+    // 查看是否可以 从中断获得信号量
+		
+		//	xSemaphoreTakeFromISR(xHandler（要申请的那把锁）,
+													//&xHigherPriorityTaskWoken（传入一个变量的地址，用于接收函数回传的结果：
+																											//是否唤醒了更高优先级的任务）)
+		
+    if (xSemaphoreTakeFromISR(xHandler, &xHigherPriorityTaskWoken) == pdPASS)	//pdPASS  操作成功	pdFAIL   操作失败
     {
-        memcpy(&g_ble_rx.printer_buffer[g_ble_rx.w_index], pdata, length);
-        g_ble_rx.w_index++;
-        g_ble_rx.left_line++;
+				memcpy(&g_ble_rx.printer_buffer[g_ble_rx.w_index], pdata, length);//内存复制 入队
+        g_ble_rx.w_index++;		//写指针加1																						
+        g_ble_rx.left_line++;	//剩余已经接收，但未打印的	行+1
         if (g_ble_rx.w_index >= MAX_LINE)
             g_ble_rx.w_index = 0;
-        if (g_ble_rx.left_line >= MAX_LINE)
+        if (g_ble_rx.left_line > MAX_LINE)
             g_ble_rx.left_line = MAX_LINE;
         xSemaphoreGiveFromISR(xHandler,&xHigherPriorityTaskWoken);
+				/*
+				*	① 归还互斥量
+					把 xHandler 标记成“可用”，其他执行流可以拿
+
+					② 唤醒等待者
+					如果有任务正阻塞在这把锁上，内核把它从阻塞态移到就绪态				
+				*/
     }
 		if(xHigherPriorityTaskWoken == pdTRUE){
-			// 如果有更高优先级的任务需要唤醒，则进行任务切换
-			portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+			// 若 x 为真（有高优先级的任务比打断的任务还紧急），就写 PendSV 寄存器，请求中断退出时换任务
+			portYIELD_FROM_ISR(pdTRUE);
+			// 硬件平台 让出（控制权）从中断里
 		}
 }
 
 /**
- * @brief 读取一行数据
+ * @brief 打印头从缓存中读取一行数据
  *
  * @return uint8_t*
  */
-uint8_t *read_to_printer()
+uint8_t * read_to_printer()
 {
     uint32_t index = 0;
-    // 查看是否可以获得信号量，如果信号量不可用，则用10个时钟滴答来查看信号量是否可用
+    // 查看任务中是否可以获得信号量，如果信号量不可用，则用10个时钟滴答来查看信号量是否可用
     if (xSemaphoreTake(xHandler, (portTickType)10) == pdPASS)
+			// 互斥锁 ，（强转成tick单位）超时时间
+		/*
+		锁空闲 							→ 立刻拿到，返回 pdPASS；
+		锁被别人占着 				→ 当前任务阻塞、让出 CPU，最多等 10ms；
+		等满 10ms 还没拿到	→ 返回 pdFAIL。
+		*/
     {
-        if (g_ble_rx.left_line > 0)
+        if (g_ble_rx.left_line > 0)//有数据
         {
             g_ble_rx.left_line--;
             index = g_ble_rx.r_index;
             g_ble_rx.r_index++;
-            if (g_ble_rx.r_index >= MAX_LINE)
+					
+            if (g_ble_rx.r_index >= MAX_LINE)//防止取指针越界
                 g_ble_rx.r_index = 0;
             xSemaphoreGive(xHandler);
-            return g_ble_rx.printer_buffer[index].buffer;
+						//这个不用自己用portYIELD切换，内核会切。但是中断里需要自己切换
+            return g_ble_rx.printer_buffer[index].buffer;//返回行的首地址
         }
         xSemaphoreGive(xHandler);
-        return NULL;
-    }else
+        return NULL;//NULL 就是 (void*)0
+    }else//没拿到互斥锁
         return NULL;
 }
 
@@ -75,14 +96,14 @@ uint8_t *read_to_printer()
  * @brief 清空接收缓存
  *
  */
-void clean_printbuffer()
+void clean_printbuffer()//清空缓存区
 {
     g_ble_rx.w_index = 0;
     g_ble_rx.r_index = 0;
     g_ble_rx.left_line = 0;
 }
 
-uint32_t get_ble_rx_leftline()
+uint32_t get_ble_rx_leftline()//还有多少行没有打印
 {
     return g_ble_rx.left_line;
 }

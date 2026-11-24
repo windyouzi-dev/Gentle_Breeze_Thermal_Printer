@@ -3,7 +3,7 @@
 
 #include "em_config.h"
 
-//一行最大byte
+//1行容量byte
 #define MAX_ONELINE_BYTE 48
 //最大行数
 #define MAX_LINE 275
@@ -13,10 +13,10 @@ typedef struct{
 }ble_rx_buffer_t;
 
 typedef struct{
-    ble_rx_buffer_t printer_buffer[MAX_LINE];
-    uint32_t r_index;
-    uint32_t w_index;
-    uint32_t left_line;
+    ble_rx_buffer_t printer_buffer[MAX_LINE];//二维数组
+    uint32_t r_index;		//读指针
+    uint32_t w_index;		//写指针
+    uint32_t left_line; //剩余没打印的行数
 }ble_rx_t;
 
 void write_to_printbuffer(uint8_t *pdata,size_t length);
