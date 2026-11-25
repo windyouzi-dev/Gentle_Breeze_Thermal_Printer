@@ -8,7 +8,7 @@ SemaphoreHandle_t xHandler = NULL;//FreeRTOS 中的信号量句柄类型
 void init_queue()
 {
 		clean_printbuffer();
-    xHandler = xSemaphoreCreateMutex();// 创建成功则返回有效句柄
+    xHandler = xSemaphoreCreateMutex();// 创建一个互斥量，返回有效句柄
 }
 
 /**
@@ -32,7 +32,7 @@ void write_to_printbuffer(uint8_t *pdata, size_t length)
 													//&xHigherPriorityTaskWoken（传入一个变量的地址，用于接收函数回传的结果：
 																											//是否唤醒了更高优先级的任务）)
 		
-    if (xSemaphoreTakeFromISR(xHandler, &xHigherPriorityTaskWoken) == pdPASS)	//pdPASS  操作成功	pdFAIL   操作失败
+    if (xSemaphoreTakeFromISR(xHandler, &xHigherPriorityTaskWoken) == pdPASS)	//pdPASS  操作成功	pdFALSE  操作失败
     {
 				memcpy(&g_ble_rx.printer_buffer[g_ble_rx.w_index], pdata, length);//内存复制 入队
         g_ble_rx.w_index++;		//写指针加1																						
@@ -41,7 +41,7 @@ void write_to_printbuffer(uint8_t *pdata, size_t length)
             g_ble_rx.w_index = 0;
         if (g_ble_rx.left_line > MAX_LINE)
             g_ble_rx.left_line = MAX_LINE;
-        xSemaphoreGiveFromISR(xHandler,&xHigherPriorityTaskWoken);
+        xSemaphoreGiveFromISR(xHandler,&xHigherPriorityTaskWoken);//失败是errQUEUE_FULL
 				/*
 				*	① 归还互斥量
 					把 xHandler 标记成“可用”，其他执行流可以拿
@@ -50,11 +50,11 @@ void write_to_printbuffer(uint8_t *pdata, size_t length)
 					如果有任务正阻塞在这把锁上，内核把它从阻塞态移到就绪态				
 				*/
     }
-		if(xHigherPriorityTaskWoken == pdTRUE){
-			// 若 x 为真（有高优先级的任务比打断的任务还紧急），就写 PendSV 寄存器，请求中断退出时换任务
-			portYIELD_FROM_ISR(pdTRUE);
+		
+			// 若 参数 为真 pdTRUE（有高优先级的任务比打断的任务还紧急），就写 PendSV 寄存器，请求中断退出时换任务
+			portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
 			// 硬件平台 让出（控制权）从中断里
-		}
+		
 }
 
 /**

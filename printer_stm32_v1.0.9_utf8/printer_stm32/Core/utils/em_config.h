@@ -23,19 +23,20 @@
 
 //按键引脚
 //34 35 36 39仅可以作为输入INPUT,不支持INPUT_PULLUP
-#define PIN_KEY 5
+//#define PIN_KEY 5
 //缺纸检测引脚
-#define PIN_PAPER 35
+//#define PIN_PAPER 35
 //电量相关引脚
-#define PIN_BATTERY_ADC 34
-#define PIN_ADC_EN 4
-//set the resolution to 12 bits (0-4096)
-#define BATTERY_ADC_BIT 12
-//热敏电阻
-#define PIN_TEMPERATRUE 36
-//蜂鸣器
-#define PIN_BEEP 18
-#define PIN_LED 18
+//#define PIN_BATTERY_ADC 34
+//#define PIN_ADC_EN 4
+
+////set the resolution to 12 bits (0-4096)
+//#define BATTERY_ADC_BIT 12
+////热敏电阻
+//#define PIN_TEMPERATRUE 36
+////蜂鸣器
+//#define PIN_BEEP 18
+//#define PIN_LED 18
 
 //V2 电机引脚
 // #define PIN_MOTOR_AP 19

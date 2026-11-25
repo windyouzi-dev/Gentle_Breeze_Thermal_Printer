@@ -14,27 +14,12 @@ static void digitalWrite(int pin,int PinState){
 }
 
 /*
-step  A  B  A- B-
-      AN BN AP BP
-1     1  0  0  1
-2     0  0  0  1
-3     0  0  1  1
-4     0  0  1  0
-5     0  1  1  0
-6     0  1  0  0
-7     1  1  0  0
-8     1  0  0  0
-4step 行进一点行
-对应PIN
-A- A B- B
-0  1 1  0
-0  0 1  0
-1  0 1  0
-1  0 0  0
-1  0 0  1
-0  0 0  1
-0  1 0  1
-0  1 0  0
+| STM32 		| IC 输入| IC 输出  | 电机 |
+| --- 			| --- 	 | ---	 		| ---	 |
+| PB9 / IN1 | IND(7) | OUTD(9) 	| M_A−​ |
+| PB8 / IN2 | INC(6) | OUTC(12) | M_A+​ |
+| PB7 / IN3 | INB(3) | OUTB(13) | M_B−​ |
+| PB6 / IN4 | INA(2) | OUTA(16) | M_B+​ |
 */
 uint8_t motor_pos = 0;
 
