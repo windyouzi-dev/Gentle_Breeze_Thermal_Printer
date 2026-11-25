@@ -19,7 +19,7 @@ typedef struct{
     uint32_t left_line; //剩余没打印的行数
 }ble_rx_t;
 
-void write_to_printbuffer(uint8_t *pdata,size_t length);
+bool write_to_printbuffer(uint8_t *pdata,size_t length);
 
 uint32_t get_ble_rx_leftline(void);
 

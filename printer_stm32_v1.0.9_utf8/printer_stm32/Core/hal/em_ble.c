@@ -6,6 +6,7 @@ bool bleConnected = true;
 uint32_t packcount = 0;
 extern UART_HandleTypeDef huart2;
 extern UART_HandleTypeDef huart1;
+volatile uint32_t drop_line_cnt = 0;//丢行计数
 
 // 定义一个字符串
 char *ble_in_at_mode = "+++";
@@ -98,7 +99,7 @@ void uart_cmd_handle(uint8_t data){
                                         }
                                  if(cmd_buffer[0] == 0xA6 && cmd_buffer[1] == 0xA6 && cmd_buffer[2] == 0xA6 && cmd_buffer[3] == 0xA6){
                                                 set_read_ble_finish(true);
-                                                printf("---->read finish 1 = %d\n",packcount);
+                                                //printf("---->read finish 1 = %d\n",packcount);
                                                 cmd_index = 0;
 																								memset(cmd_buffer,0,sizeof(cmd_buffer));
                                                 return;
@@ -107,7 +108,7 @@ void uart_cmd_handle(uint8_t data){
 												if(cmd_index >= 5){
 													if(cmd_buffer[cmd_index-1] == 0x01){
 														if(cmd_buffer[cmd_index-2] == 0xA6 && cmd_buffer[cmd_index-3] == 0xA6 && cmd_buffer[cmd_index-4] == 0xA6 && cmd_buffer[cmd_index-5] == 0xA6){
-															printf("---->read finish 2 = %d\n",packcount);
+															//printf("---->read finish 2 = %d\n",packcount);
 															cmd_index = 0;
 															memset(cmd_buffer,0,sizeof(cmd_buffer));
 															set_read_ble_finish(true);
@@ -115,15 +116,23 @@ void uart_cmd_handle(uint8_t data){
 														}
 													}
 												}
-													
-                        if(cmd_index >= 48){
-                                packcount++;
-                                write_to_printbuffer(cmd_buffer,cmd_index);
-                                cmd_index = 0;
-                                memset(cmd_buffer,0,sizeof(cmd_buffer));
+						if (cmd_index >= 48) {
+							packcount++;
+
+							if (!write_to_printbuffer(cmd_buffer, cmd_index)) {
+								drop_line_cnt++;
+							}
+
+							cmd_index = 0;
+							memset(cmd_buffer, 0, sizeof(cmd_buffer));
+						}
+							
+                        // if(cmd_index >= 48){
+                        //         packcount++;
+                        //         write_to_printbuffer(cmd_buffer,cmd_index);
+                        //         cmd_index = 0;
+                        //         memset(cmd_buffer,0,sizeof(cmd_buffer));
 																//printf("packcount = %d\n",packcount);
-													
-                        }
         }else{
 								
                 if(strstr(ptr_char, "OK\r\n") != NULL){
@@ -162,10 +171,10 @@ void uart_cmd_handle(uint8_t data){
 										cmd_index = 0;
 								}
         }
+
+
+
 }
-
-
-
 int retry_count = 0;
 
 void init_ble()

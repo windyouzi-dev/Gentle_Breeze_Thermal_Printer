@@ -7,6 +7,8 @@
 #include "em_sensors.h"
 #include "em_queue.h"
 
+extern volatile uint32_t drop_line_cnt;
+
 /**
  * @brief 初始化BLE
  * 

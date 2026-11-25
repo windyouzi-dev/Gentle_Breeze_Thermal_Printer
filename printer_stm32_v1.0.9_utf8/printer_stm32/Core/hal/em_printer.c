@@ -323,7 +323,12 @@ void start_printing_by_queuebuf()
     motor_run_step(140);
     motor_stop();
     clean_blepack_count();
-    printf("printer finish !!! read=%d printer:%d\n",get_blepack_count(),printer_count);
+    printf("printer finish !!! 打印机收到的总行数=%lu 实际打印行数:%lu 队列满后丢弃的行数=%lu\n",
+                                    (unsigned long)get_blepack_count(),
+                                    (unsigned long)printer_count,
+                                    (unsigned long)drop_line_cnt);  
+    clean_blepack_count();
+    drop_line_cnt = 0;                             
 }
 
 /**
