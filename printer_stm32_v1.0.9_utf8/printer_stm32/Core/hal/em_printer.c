@@ -104,21 +104,23 @@ static void send_one_line_data(uint8_t *data)
     {
         for (uint8_t j = 0; j < 8; ++j)
         {
-            addTime[i] += data[i * 8 + j];
+            addTime[i] += data[i * 8 + j];//8个字节值之和
         }
         tmpAddTime = addTime[i] * addTime[i];
-        addTime[i] = kAddTime * tmpAddTime;
+        addTime[i] = kAddTime * tmpAddTime;//时间K值 × 一个通道8个字节的值之和
     }
 		
-		HAL_SPI_Transmit(&hspi1, data, TPH_DI_LEN, 0xFFFF);
-    /* After send one dot line, send LAT signal low pulse.*/
+		HAL_SPI_Transmit(&hspi1, data, TPH_DI_LEN, 0xFFFF);//SPI1句柄，发送地址起始地址，字节长度，超时时间
+    
+		//发送完数据后进行LAT锁存(高低高 低脉冲)
 		HAL_GPIO_WritePin(LAT_GPIO_Port,LAT_Pin,GPIO_PIN_RESET);
+		// 保持低电平 LAT_TIME 微秒
     us_delay(LAT_TIME);
 		HAL_GPIO_WritePin(LAT_GPIO_Port,LAT_Pin,GPIO_PIN_SET);
 }
 
 /**
- * @brief 通道打印运行
+ * @brief 单通道打印运行
  *
  * @param now_stb_num
  */
@@ -128,9 +130,10 @@ static void run_stb(uint8_t now_stb_num)
     {
     case 0:
 				HAL_GPIO_WritePin(STB1_GPIO_Port,STB1_Pin,GPIO_PIN_SET);
-        us_delay((PRINT_TIME + addTime[0] + STB1_ADDTIME) * ((double)heat_density / 100));
+				// （基础打印时间+补偿时间（随字节值）+通道补偿时间）× 打印浓度（%）
+        us_delay( (PRINT_TIME + addTime[0] + STB1_ADDTIME) * ((double)heat_density / 100));
 				HAL_GPIO_WritePin(STB1_GPIO_Port,STB1_Pin,GPIO_PIN_RESET);
-        us_delay(PRINT_END_TIME);
+        us_delay(PRINT_END_TIME);//打印冷却时间
         break;
     case 1:
 				HAL_GPIO_WritePin(STB2_GPIO_Port,STB2_Pin,GPIO_PIN_SET);
@@ -170,7 +173,7 @@ static void run_stb(uint8_t now_stb_num)
 /**
  * @brief 移动电机&开始打印
  *
- * @param need_stop
+ * @param need_stop 
  * @param stbnum
  */
 bool move_and_start_std(bool need_stop, uint8_t stbnum)
@@ -178,18 +181,20 @@ bool move_and_start_std(bool need_stop, uint8_t stbnum)
     if (need_stop == true)
     {
 				printf("打印停止\n");
-        motor_stop();
-        stop_printing();
+				motor_stop();//AB通道全是低电平，驱动芯片给步进电机发送待机指令
+				stop_printing();//关闭升压，锁存信号高点平复位，通道全关，关闭打印超时定时器
         return true;
     }
     // 4step一行
+		//运行一拍
     motor_run();
+		
     if (stbnum == ALL_STB_NUM)
     {
         // 所有通道打印
         for (uint8_t index = 0; index < 6; index++)
         {
-            run_stb(index);
+            run_stb(index);//一个通道打印
             // 把电机运行信号插入通道加热中，减少打印卡顿和耗时
             if (index == 1 || index == 3 || index == 5)
             {
@@ -202,15 +207,16 @@ bool move_and_start_std(bool need_stop, uint8_t stbnum)
     {
         // 单通道打印
         run_stb(stbnum);
-        motor_run_step(3);
+        motor_run_step(3);//三拍
     }
     return false;
 }
 
 /**
- * @brief 打印错误检查
+ * @brief 打印错误（超时）检查
  * 
  * @param need_report 是否需BLE上报
+
  * @return true 打印出错
  * @return false 打印正常
  */
@@ -225,13 +231,13 @@ bool printing_error_check(bool need_report)
     {
         if(need_report){
             // 停止打印
-            clean_printbuffer();
+            clean_printbuffer();//读写指针，剩余行数归零
             ble_report();
         }
         // 停止打印
         printf("缺纸\n");
         run_beep(BEEP_WARN);
-				run_led(LED_WARN);
+				run_led(LED_WARN);//闪两次
         return true;
     }
     if (get_device_state()->temperature > 65)
@@ -259,24 +265,25 @@ bool printing_error_check(bool need_report)
  */
 void start_printing(uint8_t *data, uint32_t len)
 {
-    uint32_t offset = 0;
+    uint32_t offset = 0;//已发送的字节数（/48是行数）
     uint8_t *ptr = data;
     bool need_stop = false;
-    init_printing();
+    init_printing();//电压，锁存，通道，超时
     while (1)
     {
         if (len > offset)
         {
             // 发送一行数据 48byte*8=384bit
             send_one_line_data(ptr);
-            offset += TPH_DI_LEN;
-            ptr += TPH_DI_LEN;
+						
+            offset += TPH_DI_LEN; //字节数加48（1行）
+            ptr += TPH_DI_LEN;  //指针后移
         }
-        else
+        else//已经发送完数据了向打印头
             need_stop = true;
-        if (move_and_start_std(need_stop, ALL_STB_NUM))
+        if (move_and_start_std(need_stop, ALL_STB_NUM))//停止，电机待机，降压，锁存初始，选通关，定时器关
             break;
-        if(printing_error_check(false))
+        if(printing_error_check(false))//查看是否打印超时了
             break;
     }
     motor_run_step(40);
@@ -288,33 +295,30 @@ void start_printing(uint8_t *data, uint32_t len)
  * @brief 可变队列打印
  *
  */
-void start_printing_by_queuebuf()
+void start_printing_by_queuebuf( )
 {
     uint8_t *pdata = NULL;
 		uint32_t printer_count = 0;
     init_printing();
     while (1)
     {
-        if (get_ble_rx_leftline() > 0)
+        if (get_ble_rx_leftline() > 0)//还有剩余行数
         {
-            // printf("printing...\n");
-            pdata = read_to_printer();
+            pdata = read_to_printer();//读一行，读指针+1
             if (pdata != NULL)
             {
 								printer_count ++;
-                send_one_line_data(pdata);
-                if (move_and_start_std(false, ALL_STB_NUM))
+							send_one_line_data(pdata);//计算加热补偿时间，发送（spi句柄，起始地址，长度字节，超时时间），锁存低电平脉冲
+                if (move_and_start_std(false, ALL_STB_NUM))//把一行 六个通道进行打印
                     break;
             }
         }
         else
         {
-            if (move_and_start_std(true, ALL_STB_NUM))
+					if (move_and_start_std(true, ALL_STB_NUM))//没有要打印的了，进行电机和打印机停止
                 break;
         }
-        if (get_printer_timeout_status())
-            break;
-        if(printing_error_check(true))
+        if(printing_error_check(true))//错误退出，（超时，缺纸，打印头过热）	
             break;
     }
     motor_run_step(140);
@@ -343,7 +347,7 @@ void start_printing_by_onestb(uint8_t stbnum, uint8_t *data, uint32_t len)
     init_printing();
     while (1)
     {
-        printf("printer %d\n", offset);
+        printf("printer 已打印的字节 %d\n", offset);
         if (len > offset)
         {
             // 发送一行数据 48byte*8=384bit
@@ -355,8 +359,6 @@ void start_printing_by_onestb(uint8_t stbnum, uint8_t *data, uint32_t len)
             need_stop = true;
         if (move_and_start_std(need_stop, stbnum))
             break;
-        if (get_printer_timeout_status())
-            break;
         if(printing_error_check(false))
             break;
     }
@@ -366,14 +368,14 @@ void start_printing_by_onestb(uint8_t stbnum, uint8_t *data, uint32_t len)
 		printf("printer end2\n");
 }
 
-static void setDebugData(uint8_t *print_data)
+static void setDebugData(uint8_t *print_data)//5行测试数据
 {
     for (uint32_t cleardata = 0; cleardata < 48 * 5; ++cleardata)
     {
         print_data[cleardata] = 0x55;
     }
 }
-
+//每个通道各打印 5 行，共测试六个通道
 void testSTB()
 {
     uint8_t print_data[48 * 6];
@@ -395,12 +397,12 @@ void testSTB()
     printf("测试完成");
 }
 
-void init_printer()
+void init_printer()//仅一开始初始化使用
 {
-	init_motor();	//A B两H桥通道电平为0，为待机状态
+		init_motor();	//A B两H桥通道电平为0，为待机状态
 
-    set_stb_idle();
-		HAL_GPIO_WritePin(VH_EN_GPIO_Port,VH_EN_Pin,GPIO_PIN_RESET);
+    set_stb_idle();//全部 通道失能
+	HAL_GPIO_WritePin(VH_EN_GPIO_Port,VH_EN_Pin,GPIO_PIN_RESET);//不要升压
 
 
 }
