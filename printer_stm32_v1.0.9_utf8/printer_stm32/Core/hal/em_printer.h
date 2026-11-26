@@ -3,9 +3,9 @@
 
 #include "em_config.h"
 #include "em_motor.h"
-#include "em_spi.h"
 #include "em_ble.h"
 #include "em_queue.h"
+#include <SPI.h>
 
 //每行总点数
 #define TPH_DOTS_PER_LINE 384

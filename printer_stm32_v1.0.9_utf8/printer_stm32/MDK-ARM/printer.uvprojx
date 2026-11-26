@@ -632,11 +632,6 @@
               <FilePath>..\Core\hal\em_motor.c</FilePath>
             </File>
             <File>
-              <FileName>em_spi.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\Core\hal\em_spi.c</FilePath>
-            </File>
-            <File>
               <FileName>em_timer.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\Core\hal\em_timer.c</FilePath>

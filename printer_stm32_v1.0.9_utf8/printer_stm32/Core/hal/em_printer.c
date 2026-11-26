@@ -1,28 +1,27 @@
 #include "em_printer.h"
 #include "em_timer.h"
 
-float addTime[6] = {0};
+float addTime[6] = {0};//定义一个长度为 6 的全局数组，
+//分别保存 STB1～STB6 六个加热通道需要增加的加热时间
+
 // 点数-增加时间系数
 #define kAddTime 0.001
 // 根据打印头实际打印效果修改打印时间偏移值
+
+//六个通道各自的固定补偿时间（某一通道浅色就补偿加热时间）
 #define STB1_ADDTIME 0
 #define STB2_ADDTIME 0
 #define STB3_ADDTIME 0
 #define STB4_ADDTIME 0
 #define STB5_ADDTIME 0
 #define STB6_ADDTIME 0
-// 热密度
+
+// 全局打印浓度 （heat_density %）
 uint8_t heat_density = 64;
 
 
-
-
-static void digitalWrite_vhen(int pin,int PinState){
-	HAL_GPIO_WritePin(GPIOA,VH_EN_Pin,(GPIO_PinState)PinState);
-}
-
 /**
- * @brief 失能所有通道
+ * @brief 失能所有通道(设置 选通 空闲)
  *
  */
 static void set_stb_idle()
@@ -36,17 +35,21 @@ static void set_stb_idle()
 }
 
 /**
- * @brief 打印前初始化
+ * @brief 打印前初始化 (升压+锁存信号初始化+通道失能+超时定时器开启)
  *
  */
 static void init_printing()
 {
-    // 开启打印超时监听
-    open_printer_timeout_timer();
-    set_stb_idle();
-		HAL_GPIO_WritePin(LAT_GPIO_Port,LAT_Pin,GPIO_PIN_SET);
-    // POWER ON
+    
+		// POWER ON
 		HAL_GPIO_WritePin(VH_EN_GPIO_Port,VH_EN_Pin,GPIO_PIN_SET);
+		//锁存数据信号空闲
+		HAL_GPIO_WritePin(LAT_GPIO_Port,LAT_Pin,GPIO_PIN_SET);
+		//让所有通道空闲失能
+    set_stb_idle();
+		// 开启打印超时监听（ 20s ）
+    open_printer_timeout_timer();
+    
 }
 
 /**
@@ -55,16 +58,19 @@ static void init_printing()
  */
 static void stop_printing()
 {
-    // 关闭打印超时监听
-    close_printer_timeout_timer();
+    
     // POWER OFF
-		HAL_GPIO_WritePin(VH_EN_GPIO_Port,VH_EN_Pin,GPIO_PIN_RESET);
-    set_stb_idle();
+		HAL_GPIO_WritePin(VH_EN_GPIO_Port,VH_EN_Pin,GPIO_PIN_RESET);\
+		//锁存数据信号空闲
 	  HAL_GPIO_WritePin(LAT_GPIO_Port,LAT_Pin,GPIO_PIN_SET);
+		//让所有通道空闲失能
+    set_stb_idle();
+		// 关闭打印超时监听
+    close_printer_timeout_timer();
 }
 
 /**
- * @brief Set the heat density object密度设置
+ * @brief 打印密度设置
  *
  * @param density
  */
@@ -73,7 +79,11 @@ void set_heat_density(uint8_t density)
     printf("打印密度设置 %d\n", density);
     heat_density = density;
 }
-
+/**
+ * @brief 清除打印补偿时间
+ *
+ * @param 无
+ */
 void clearAddTime()
 {
     addTime[0] = addTime[1] = addTime[2] = addTime[3] = addTime[4] = addTime[5] = 0;
@@ -87,7 +97,9 @@ void clearAddTime()
 static void send_one_line_data(uint8_t *data)
 {
     float tmpAddTime = 0;
-    clearAddTime();
+    clearAddTime();//清除打印补偿时间
+	
+		//48个字节
     for (uint8_t i = 0; i < 6; ++i)
     {
         for (uint8_t j = 0; j < 8; ++j)
@@ -97,7 +109,8 @@ static void send_one_line_data(uint8_t *data)
         tmpAddTime = addTime[i] * addTime[i];
         addTime[i] = kAddTime * tmpAddTime;
     }
-    spiCommand(data, TPH_DI_LEN);
+		
+		HAL_SPI_Transmit(&hspi1, data, TPH_DI_LEN, 0xFFFF);
     /* After send one dot line, send LAT signal low pulse.*/
 		HAL_GPIO_WritePin(LAT_GPIO_Port,LAT_Pin,GPIO_PIN_RESET);
     us_delay(LAT_TIME);
@@ -389,5 +402,5 @@ void init_printer()
     set_stb_idle();
 		HAL_GPIO_WritePin(VH_EN_GPIO_Port,VH_EN_Pin,GPIO_PIN_RESET);
 
-    init_spi();
+
 }

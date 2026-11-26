@@ -54,7 +54,7 @@ void read_motor_timer_callbackfun(void const * argument)//回调函数（定时�
     }
 }	
 
-void motor_start()
+void motor_start()//软件定时器启动
 {
 	if(myMotorTimerHandle == NULL){//没有定时器对象就创建
 		osTimerDef(myMotorTimer, read_motor_timer_callbackfun);//定时器定义 1句柄 2回调函数
@@ -64,7 +64,7 @@ void motor_start()
 	osTimerStart(myMotorTimerHandle,2); //启动软件定时器对象，周期参数是 2 个 RTOS tick
 }
 
-void motor_stop()
+void motor_stop()//待机，不要动
 {
 	HAL_GPIO_WritePin(GPIOB,MOTOR_IN1_Pin,(GPIO_PinState)0);
 	HAL_GPIO_WritePin(GPIOB,MOTOR_IN2_Pin,(GPIO_PinState)0);
@@ -74,7 +74,7 @@ void motor_stop()
 			osTimerStop(myMotorTimerHandle);
 }
 
-void motor_run()
+void motor_run()//运行一拍
 {
 	HAL_GPIO_WritePin(GPIOB,MOTOR_IN1_Pin,(GPIO_PinState)motor_table[motor_pos][0]);
 	HAL_GPIO_WritePin(GPIOB,MOTOR_IN2_Pin,(GPIO_PinState)motor_table[motor_pos][1]);
@@ -87,7 +87,7 @@ void motor_run()
     }
 }
 
-void motor_run_step(uint32_t steps)
+void motor_run_step(uint32_t steps)//运行指定拍数（8拍一圈）
 {
     while (steps)
     {
@@ -106,7 +106,7 @@ void motor_run_step(uint32_t steps)
     }
 }
 
-void init_motor()
+void init_motor()//令步进电机待机 四个引脚都是低电平
 {
 	HAL_GPIO_WritePin(GPIOB,MOTOR_IN1_Pin, GPIO_PIN_RESET);
 	HAL_GPIO_WritePin(GPIOB,MOTOR_IN2_Pin, GPIO_PIN_RESET);
