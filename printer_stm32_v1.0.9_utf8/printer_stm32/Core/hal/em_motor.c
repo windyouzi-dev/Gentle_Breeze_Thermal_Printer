@@ -108,8 +108,8 @@ void motor_run_step(uint32_t steps)
 
 void init_motor()
 {
-	HAL_GPIO_WritePin(GPIOB,MOTOR_IN1_Pin,(GPIO_PinState)0);
-	HAL_GPIO_WritePin(GPIOB,MOTOR_IN2_Pin,(GPIO_PinState)0);
-	HAL_GPIO_WritePin(GPIOB,MOTOR_IN3_Pin,(GPIO_PinState)0);
-	HAL_GPIO_WritePin(GPIOB,MOTOR_IN4_Pin,(GPIO_PinState)0);
+	HAL_GPIO_WritePin(GPIOB,MOTOR_IN1_Pin, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(GPIOB,MOTOR_IN2_Pin, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(GPIOB,MOTOR_IN3_Pin, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(GPIOB,MOTOR_IN4_Pin, GPIO_PIN_RESET);
 }

@@ -191,12 +191,11 @@ void task_printer(void *pvParameters)
 void init_task()
 {
     printf("init_task\n");
-    init_device_state();
-    init_timer();
-    init_sensors();
-    init_queue();
-    adc_init();
-//    init_key();
+    init_device_state();		//电量，温度，纸张等 设备状态 初始化
+    init_timer();						//10s定时器初始化（定义， 创造， 定时）
+    init_sensors();					//关LED灯
+		init_queue();						//队列的读/写，接收到的未打印的剩余行数
+		adc_init();							//adc初始化，但是不取值（预热）
     init_printer();
     xTaskCreate(
         task_report,  // 任务函数

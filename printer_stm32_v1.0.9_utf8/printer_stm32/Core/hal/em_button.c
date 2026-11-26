@@ -10,10 +10,10 @@ bool longPressIsStart = false;
 
 void key_check_run(){
   if(keyIsPress == false){	//没按下，判断按键状态
-    if( HAL_GPIO_ReadPin(BTN_GPIO_Port,BTN_Pin) == LOW)
+    if( HAL_GPIO_ReadPin(BTN_GPIO_Port,BTN_Pin) == 0)
 		{
       vTaskDelay(10);
-      if( HAL_GPIO_ReadPin(BTN_GPIO_Port,BTN_Pin) == LOW)
+      if( HAL_GPIO_ReadPin(BTN_GPIO_Port,BTN_Pin) == 0)
 			{
         keyIsPress = true;
         clicktime = HAL_GetTick();
@@ -21,7 +21,7 @@ void key_check_run(){
     }
   }
   if(keyIsPress == true){		//按下了。
-    if( HAL_GPIO_ReadPin(BTN_GPIO_Port,BTN_Pin) == HIGH)//现在按键没有被按下
+    if( HAL_GPIO_ReadPin(BTN_GPIO_Port,BTN_Pin) == 1)//现在按键没有被按下
 		{
       if(HAL_GetTick() - clicktime > SHORT_PRESS_TIME)//松开按键后发现上一个是长按
 			{

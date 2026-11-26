@@ -15,23 +15,7 @@ float addTime[6] = {0};
 uint8_t heat_density = 64;
 
 
-static void digitalWrite(int pin,int PinState){
-	if(pin == PIN_STB1){
-		HAL_GPIO_WritePin(GPIOB,STB1_Pin,(GPIO_PinState)PinState);
-	}else if(pin == PIN_STB2){
-		HAL_GPIO_WritePin(GPIOB,STB2_Pin,(GPIO_PinState)PinState);
-	}else if(pin == PIN_STB3){
-		HAL_GPIO_WritePin(GPIOB,STB3_Pin,(GPIO_PinState)PinState);
-	}else if(pin == PIN_STB4){
-		HAL_GPIO_WritePin(GPIOB,STB4_Pin,(GPIO_PinState)PinState);
-	}else if(pin == PIN_STB5){
-		HAL_GPIO_WritePin(GPIOB,STB5_Pin,(GPIO_PinState)PinState);
-	}else if(pin == PIN_STB6){
-		HAL_GPIO_WritePin(GPIOB,STB6_Pin,(GPIO_PinState)PinState);
-	}else if(pin == PIN_LAT){
-		HAL_GPIO_WritePin(GPIOB,LAT_Pin,(GPIO_PinState)PinState);
-	}
-}
+
 
 static void digitalWrite_vhen(int pin,int PinState){
 	HAL_GPIO_WritePin(GPIOA,VH_EN_Pin,(GPIO_PinState)PinState);
@@ -43,12 +27,12 @@ static void digitalWrite_vhen(int pin,int PinState){
  */
 static void set_stb_idle()
 {
-    digitalWrite(PIN_STB1, LOW);
-    digitalWrite(PIN_STB2, LOW);
-    digitalWrite(PIN_STB3, LOW);
-    digitalWrite(PIN_STB4, LOW);
-    digitalWrite(PIN_STB5, LOW);
-    digitalWrite(PIN_STB6, LOW);
+	HAL_GPIO_WritePin(STB1_GPIO_Port,STB1_Pin,GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(STB2_GPIO_Port,STB2_Pin,GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(STB3_GPIO_Port,STB3_Pin,GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(STB4_GPIO_Port,STB4_Pin,GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(STB5_GPIO_Port,STB5_Pin,GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(STB6_GPIO_Port,STB6_Pin,GPIO_PIN_RESET);
 }
 
 /**
@@ -60,9 +44,9 @@ static void init_printing()
     // 开启打印超时监听
     open_printer_timeout_timer();
     set_stb_idle();
-    digitalWrite(PIN_LAT, HIGH);
+		HAL_GPIO_WritePin(LAT_GPIO_Port,LAT_Pin,GPIO_PIN_SET);
     // POWER ON
-    digitalWrite_vhen(PIN_VHEN, HIGH);
+		HAL_GPIO_WritePin(VH_EN_GPIO_Port,VH_EN_Pin,GPIO_PIN_SET);
 }
 
 /**
@@ -74,9 +58,9 @@ static void stop_printing()
     // 关闭打印超时监听
     close_printer_timeout_timer();
     // POWER OFF
-    digitalWrite_vhen(PIN_VHEN, LOW);
+		HAL_GPIO_WritePin(VH_EN_GPIO_Port,VH_EN_Pin,GPIO_PIN_RESET);
     set_stb_idle();
-    digitalWrite(PIN_LAT, HIGH);
+	  HAL_GPIO_WritePin(LAT_GPIO_Port,LAT_Pin,GPIO_PIN_SET);
 }
 
 /**
@@ -115,9 +99,9 @@ static void send_one_line_data(uint8_t *data)
     }
     spiCommand(data, TPH_DI_LEN);
     /* After send one dot line, send LAT signal low pulse.*/
-    digitalWrite(PIN_LAT, LOW);
+		HAL_GPIO_WritePin(LAT_GPIO_Port,LAT_Pin,GPIO_PIN_RESET);
     us_delay(LAT_TIME);
-    digitalWrite(PIN_LAT, HIGH);
+		HAL_GPIO_WritePin(LAT_GPIO_Port,LAT_Pin,GPIO_PIN_SET);
 }
 
 /**
@@ -130,39 +114,39 @@ static void run_stb(uint8_t now_stb_num)
     switch (now_stb_num)
     {
     case 0:
-        digitalWrite(PIN_STB1, 1);
+				HAL_GPIO_WritePin(STB1_GPIO_Port,STB1_Pin,GPIO_PIN_SET);
         us_delay((PRINT_TIME + addTime[0] + STB1_ADDTIME) * ((double)heat_density / 100));
-        digitalWrite(PIN_STB1, 0);
+				HAL_GPIO_WritePin(STB1_GPIO_Port,STB1_Pin,GPIO_PIN_RESET);
         us_delay(PRINT_END_TIME);
         break;
     case 1:
-        digitalWrite(PIN_STB2, 1);
+				HAL_GPIO_WritePin(STB2_GPIO_Port,STB2_Pin,GPIO_PIN_SET);
         us_delay((PRINT_TIME + addTime[1] + STB2_ADDTIME) * ((double)heat_density / 100));
-        digitalWrite(PIN_STB2, 0);
+				HAL_GPIO_WritePin(STB2_GPIO_Port,STB2_Pin,GPIO_PIN_RESET);
         us_delay(PRINT_END_TIME);
         break;
     case 2:
-        digitalWrite(PIN_STB3, 1);
+				HAL_GPIO_WritePin(STB3_GPIO_Port,STB3_Pin,GPIO_PIN_SET);
         us_delay((PRINT_TIME + addTime[2] + STB3_ADDTIME) * ((double)heat_density / 100));
-        digitalWrite(PIN_STB3, 0);
+				HAL_GPIO_WritePin(STB3_GPIO_Port,STB3_Pin,GPIO_PIN_RESET);
         us_delay(PRINT_END_TIME);
         break;
     case 3:
-        digitalWrite(PIN_STB4, 1);
+				HAL_GPIO_WritePin(STB4_GPIO_Port,STB4_Pin,GPIO_PIN_SET);
         us_delay((PRINT_TIME + addTime[3] + STB4_ADDTIME) * ((double)heat_density / 100));
-        digitalWrite(PIN_STB4, 0);
+				HAL_GPIO_WritePin(STB4_GPIO_Port,STB4_Pin,GPIO_PIN_RESET);
         us_delay(PRINT_END_TIME);
         break;
     case 4:
-        digitalWrite(PIN_STB5, 1);
+				HAL_GPIO_WritePin(STB5_GPIO_Port,STB5_Pin,GPIO_PIN_SET);
         us_delay((PRINT_TIME + addTime[4] + STB5_ADDTIME) * ((double)heat_density / 100));
-        digitalWrite(PIN_STB5, 0);
+				HAL_GPIO_WritePin(STB5_GPIO_Port,STB5_Pin,GPIO_PIN_RESET);
         us_delay(PRINT_END_TIME);
         break;
     case 5:
-        digitalWrite(PIN_STB6, 1);
+				HAL_GPIO_WritePin(STB6_GPIO_Port,STB6_Pin,GPIO_PIN_SET);
         us_delay((PRINT_TIME + addTime[5] + STB6_ADDTIME) * ((double)heat_density / 100));
-        digitalWrite(PIN_STB6, 0);
+				HAL_GPIO_WritePin(STB6_GPIO_Port,STB6_Pin,GPIO_PIN_RESET);
         us_delay(PRINT_END_TIME);
         break;
     default:
@@ -400,22 +384,10 @@ void testSTB()
 
 void init_printer()
 {
-    init_motor();
+	init_motor();	//A B两H桥通道电平为0，为待机状态
 
-//    pinMode(PIN_LAT, OUTPUT);
-//    pinMode(PIN_SCK, OUTPUT);
-//    pinMode(PIN_SDA, OUTPUT);
-
-//    pinMode(PIN_STB1, OUTPUT);
-//    pinMode(PIN_STB2, OUTPUT);
-//    pinMode(PIN_STB3, OUTPUT);
-//    pinMode(PIN_STB4, OUTPUT);
-//    pinMode(PIN_STB5, OUTPUT);
-//    pinMode(PIN_STB6, OUTPUT);
     set_stb_idle();
-
-//    pinMode(PIN_VHEN, OUTPUT);
-    digitalWrite_vhen(PIN_VHEN, LOW);
+		HAL_GPIO_WritePin(VH_EN_GPIO_Port,VH_EN_Pin,GPIO_PIN_RESET);
 
     init_spi();
 }
