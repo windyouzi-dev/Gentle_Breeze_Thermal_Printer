@@ -12,15 +12,15 @@
 
 	#define _FREERTOS_OPEN_ 
 
-//	#define BLE_NAME "Breeze-Printer"
+	#define BLE_NAME "Breeze-Printer"
 
 	//接收完成所有数据才开始打印
 	#define START_PRINTER_WHEN_FINISH_RAED 1
 
 	#ifdef _FREERTOS_OPEN_
-	// #define MOTOR_WATI_TIME 4   //ms
-	// #define PRINT_TIME 2        //ms
-	// #define PRINT_END_TIME 2  //ms
+	// #define MOTOR_WATI_TIME 4  	//ms
+	// #define PRINT_TIME 2       	//ms
+	// #define PRINT_END_TIME 2  	  //ms
 	#define PRINT_TIME 2600         //打印加热时间
 	#define PRINT_END_TIME 200      //冷却时间
 	#define MOTOR_WATI_TIME 4000    //电机一步时间

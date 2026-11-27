@@ -141,7 +141,7 @@ void task_button(void *pvParameters)
 {
 		int count = 0;
 		printf("task_button init\n");
-    for (;;) // A Task shall never return or exit.
+    for (;;) // 任务不会退出
     {
         key_check_run(); // 需要周期调用按键处理函数
         vTaskDelay(20);
@@ -158,7 +158,7 @@ void task_printer(void *pvParameters)
 		int count = 0;
 		init_ble();
 		printf("task_printer init\n");
-    for (;;) // A Task shall never return or exit.
+	for (;;) // 任务不退出
     {
 				ble_status_data_clean();
         run_printer();
@@ -174,19 +174,6 @@ void task_printer(void *pvParameters)
 				}
     }
 }
-
-//void printer_run(){
-//    // printer_test = true;
-//    for (;;) // A Task shall never return or exit.
-//    {
-//        run_printer();
-//        // vTaskDelay(10);
-//        if(printer_test){
-//            printer_test = false;
-//            testSTB();
-//        }
-//    }
-//}
 
 void init_task()
 {
