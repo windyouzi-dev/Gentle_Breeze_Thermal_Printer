@@ -6,9 +6,13 @@
 #include "em_device.h"
 #include "em_sensors.h"
 #include "em_queue.h"
+#include "em_printer.h"
 
 extern volatile uint32_t drop_line_cnt;
-
+#define Service_UUID 6E400001B5A3F393E0A9E50E24DCCA9E
+#define BLE_Rx_UUID  6E400002B5A3F393E0A9E50E24DCCA9E
+#define BLE_Tx_UUID  6E400003B5A3F393E0A9E50E24DCCA9E
+#define AT_option_UUID  6E400004B5A3F393E0A9E50E24DCCA9E
 /**
  * @brief 初始化BLE
  * 

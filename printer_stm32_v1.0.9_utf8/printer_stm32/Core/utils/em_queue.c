@@ -15,23 +15,23 @@ void init_queue()
 }
 
 /**
-* @brief 通过蓝牙向打印缓冲区写入一行数据
+* @brief 向打印缓冲区写入一行数据
  *
  * @param pdata 	数据地址
  * @param length	字节数
  */
 bool write_to_printbuffer(uint8_t *pdata, size_t length)
 {
-    if (pdata == NULL || length == 0)
+	if (pdata == NULL || length == 0)//数据为空
         return false;
 
-    if (g_ble_rx.left_line >= MAX_LINE)
+    if (g_ble_rx.left_line >= MAX_LINE)//行数过长
         return false;
 
-    if (length > MAX_ONELINE_BYTE)
+    if (length > MAX_ONELINE_BYTE)//列数过长
         length = MAX_ONELINE_BYTE;
 
-    memcpy(&g_ble_rx.printer_buffer[g_ble_rx.w_index], pdata, length);
+    memcpy(&g_ble_rx.printer_buffer[g_ble_rx.w_index], pdata, length);//数据传给二维打印数组
 
     g_ble_rx.w_index++;
     g_ble_rx.left_line++;

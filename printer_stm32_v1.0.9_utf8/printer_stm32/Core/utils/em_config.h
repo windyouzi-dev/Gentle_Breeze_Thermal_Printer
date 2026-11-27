@@ -12,7 +12,7 @@
 
 	#define _FREERTOS_OPEN_ 
 
-	#define BLE_NAME "Breeze-Printer"
+	#define BLE_NAME "Wind-Printer"
 
 	//接收完成所有数据才开始打印
 	#define START_PRINTER_WHEN_FINISH_RAED 1
